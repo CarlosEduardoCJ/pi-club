@@ -223,6 +223,33 @@ export type Database = {
         }
         Relationships: []
       }
+      dev_master_attempts: {
+        Row: {
+          attempts: number
+          blocked_until: string | null
+          client_key: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          blocked_until?: string | null
+          client_key: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          blocked_until?: string | null
+          client_key?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           content: string
