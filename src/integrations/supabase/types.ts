@@ -677,6 +677,39 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_buckets: {
+        Row: {
+          attempts: number
+          created_at: string
+          endpoint: string
+          id: string
+          ip: string | null
+          reset_at: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          endpoint: string
+          id?: string
+          ip?: string | null
+          reset_at: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip?: string | null
+          reset_at?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
