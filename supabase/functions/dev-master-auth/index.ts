@@ -62,9 +62,7 @@ Deno.serve(async (req) => {
           ok: false,
           blocked: true,
           error: `Muitas tentativas incorretas. Tente novamente em ${minutes} minuto(s).`,
-        },
-        429
-      );
+        });
     }
 
     if (typeof password === "string" && password.length > 0 && safeEqual(password, masterPassword)) {
@@ -106,17 +104,14 @@ Deno.serve(async (req) => {
           ok: false,
           blocked: true,
           error: `Muitas tentativas incorretas. Acesso bloqueado por ${BLOCK_MINUTES} minutos.`,
-        },
-        429
-      );
+        });
     }
 
     return json(
       {
         ok: false,
         error: `Senha mestra incorreta. Tentativas restantes: ${MAX_ATTEMPTS - attempts}.`,
-      },
-    );
+      });
   } catch (_err) {
     return json({ ok: false, error: "Erro ao validar a senha mestra." });
   }
