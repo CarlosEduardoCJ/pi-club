@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 interface LiveMsg {
   id: string;
@@ -160,7 +161,7 @@ const ChatRoomScreen = () => {
     typingTimeoutRef.current = setTimeout(broadcastTyping, 200);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = input.trim();
     if (!text || !profileId || !channelRef.current || !me) return;
     if (containsProfanity(text)) {
@@ -168,6 +169,7 @@ const ChatRoomScreen = () => {
       return;
     }
     if (text.length > MAX_LEN) return;
+    if (!(await checkRateLimit("club_chat", profileId))) return;
     const msg: LiveMsg = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       senderId: profileId,

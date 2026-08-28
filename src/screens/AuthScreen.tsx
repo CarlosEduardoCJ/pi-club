@@ -9,6 +9,7 @@ import { BookOpen, Eye, EyeOff, Check, ChevronsUpDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const AuthScreen = () => {
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
@@ -75,6 +76,11 @@ const AuthScreen = () => {
     setLoading(true);
 
     try {
+      if (!(await checkRateLimit("auth"))) {
+        setLoading(false);
+        return;
+      }
+
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {

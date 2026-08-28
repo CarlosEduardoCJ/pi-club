@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { containsProfanity, PROFANITY_MESSAGE } from '@/lib/profanity';
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2);
 
@@ -35,6 +36,10 @@ const CreatePostDialog = () => {
       return;
     }
     setLoading(true);
+    if (!(await checkRateLimit('post', profileId))) {
+      setLoading(false);
+      return;
+    }
     const { error } = await supabase.from('posts').insert({
       content: content.trim(),
       club_id: clubId === '__all__' ? null : clubId,

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 interface OtherProfile {
   id: string;
@@ -237,6 +238,7 @@ export default function DirectChatScreen() {
       return;
     }
     if (text.length > MAX_LEN) return;
+    if (!(await checkRateLimit("direct_message", profileId))) return;
     setInput("");
     const { error } = await supabase.from("direct_messages").insert({
       sender_id: profileId,
