@@ -64,9 +64,8 @@ export default function DevSetupScreen() {
     setLoading(true);
 
     try {
-      if (masterPassword !== DEV_SETUP_MASTER_PASSWORD) {
-        throw new Error("Senha mestra incorreta.");
-      }
+      await verifyMasterPassword(masterPassword);
+
 
       setStep("form");
     } catch (err) {
