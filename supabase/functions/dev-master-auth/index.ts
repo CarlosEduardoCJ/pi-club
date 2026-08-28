@@ -9,9 +9,9 @@ const corsHeaders = {
 const MAX_ATTEMPTS = 3;
 const BLOCK_MINUTES = 15;
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown) =>
   new Response(JSON.stringify(body), {
-    status,
+    status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   try {
     const masterPassword = Deno.env.get("DEV_MASTER_PASSWORD");
     if (!masterPassword) {
-      return json({ ok: false, error: "Master password não configurada" }, 500);
+      return json({ ok: false, error: "Master password não configurada" });
     }
 
     const { password } = await req.json().catch(() => ({ password: "" }));
@@ -116,9 +116,8 @@ Deno.serve(async (req) => {
         ok: false,
         error: `Senha mestra incorreta. Tentativas restantes: ${MAX_ATTEMPTS - attempts}.`,
       },
-      401
     );
   } catch (_err) {
-    return json({ ok: false, error: "Erro ao validar a senha mestra." }, 500);
+    return json({ ok: false, error: "Erro ao validar a senha mestra." });
   }
 });
