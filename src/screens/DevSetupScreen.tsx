@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
 const DEFAULT_DEV_SCHOOL = "CETI MANOEL RICARDO";
-const DEV_SETUP_MASTER_PASSWORD = import.meta.env.VITE_DEV_MASTER_PASSWORD;
+
 const authSetupClient = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -21,6 +22,20 @@ const authSetupClient = createClient(
     },
   }
 );
+
+const verifyMasterPassword = async (password: string) => {
+  const { data, error } = await supabase.functions.invoke("dev-master-auth", {
+    body: { password },
+  });
+
+  if (data?.ok) return true;
+
+  const message =
+    (data as { error?: string } | null)?.error ??
+    (error ? "Não foi possível validar a senha mestra." : "Senha mestra incorreta.");
+  throw new Error(message);
+};
+
 
 const getDeveloperIdentity = (email: string) => {
   const localPart = email.trim().split("@")[0] || "developer";
