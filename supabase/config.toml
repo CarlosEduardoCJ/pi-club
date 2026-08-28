@@ -1,1 +1,4 @@
 project_id = "vpbfulwsptehagzqhvey"
+
+[functions.dev-master-auth]
+verify_jwt = false
