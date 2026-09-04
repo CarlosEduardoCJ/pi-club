@@ -1,44 +1,24 @@
-# Reforço de acesso aos dados (RLS) + exclusão suave
+# Corrigir "Erro ao apagar" ao excluir publicação
 
-Antes de mexer, verifiquei as regras que estão hoje no banco. Duas coisas importantes:
+## O que já verifiquei
 
-## O que já está correto (os alertas do scanner não batem com a realidade atual)
+- O código de apagar (em `PostCard.tsx`) está sintaticamente correto e marca a publicação como apagada com data/hora.
+- As permissões do banco permitem que o autor da publicação a atualize; as permissões de tabela para usuários autenticados também estão completas.
+- A coluna de "apagado em" existe no banco e nos tipos do app; a compilação está sem erros.
+- Não há registro de erro capturado do navegador nesta conversa, então a causa exata ainda não está confirmada.
 
-- **Mensagens diretas**: hoje só o remetente e o destinatário conseguem ler cada mensagem, e só é possível enviar para alguém da mesma escola. O alerta "qualquer usuário autenticado lê qualquer conversa" não corresponde às regras atuais — provavelmente é um resultado antigo. Vou confirmar isso com um teste real (item 4) em vez de reescrever essas regras sem motivo.
+Ou seja: não posso afirmar ainda que seja regra de acesso, e não vou reescrever regras às cegas.
 
-## O que realmente está aberto e precisa correção
+## Plano
 
-1. **Publicações**: qualquer pessoa logada consegue ler publicações de **todas as escolas**. Correção: leitura permitida só para publicações da própria escola do usuário (mais os desenvolvedores, que veem tudo, como já funciona hoje).
-2. **Cargos (admin/moderador)**: um administrador consegue ver os cargos de usuários de outras escolas. Correção: administrador passa a ver apenas cargos de pessoas da própria escola; cada pessoa continua vendo o próprio cargo; desenvolvedor continua vendo tudo.
-
-## Ponto que preciso confirmar com você: perfis
-
-Você pediu "cada usuário vê só o seu próprio perfil". Isso **quebraria o app**: sem ler outros perfis, deixam de funcionar nome/foto no feed, busca de pessoas, seguidores, lista de conversas e o painel admin.
-
-Minha recomendação: perfis ficam visíveis apenas **dentro da mesma escola** (e para desenvolvedores), em vez de somente o próprio. Vou seguir por esse caminho, salvo se você preferir outra coisa.
-
-## Exclusão suave (soft delete)
-
-- Adicionar `deleted_at` em **publicações** e em **mensagens diretas** (vazio por padrão).
-- Excluir passa a marcar a data em vez de apagar de verdade; tudo que lista dados passa a esconder os itens marcados.
-- Mensagens diretas já têm um campo `deleted` em uso no chat; vou manter o comportamento visual atual e usar `deleted_at` como registro de quando foi apagada.
-- Também adicionar `updated_at` com atualização automática nas duas tabelas.
-
-## Testes de isolamento entre escolas
-
-Depois das mudanças, testo com contas reais de escolas diferentes:
-- usuário da escola A tentando ler publicações da escola B → resultado vazio, sem erro;
-- usuário A tentando ler conversas de que não participa → resultado vazio;
-- usuário A lendo perfis da escola B → resultado vazio;
-- e confirmo que o app continua funcionando normalmente para quem está na mesma escola (feed, busca, chat, admin, painel do desenvolvedor).
+1. **Mostrar o erro real em vez da mensagem genérica**: o aviso passa a exibir o motivo devolvido pelo banco e registra o detalhe no console, para identificar em um clique se é permissão, coluna ou nenhuma linha afetada.
+2. **Detectar o caso silencioso de "nenhuma linha alterada"**: pedir de volta o identificador da publicação atualizada. Se voltar vazio, a regra de acesso barrou a operação — nesse caso mostro "Você não tem permissão para apagar esta publicação" em vez de erro genérico.
+3. **Fallback seguro**: se a marcação como apagada não afetar nenhuma linha, tentar a exclusão definitiva (que já é permitida ao autor e ao administrador da escola). Assim o botão volta a funcionar em qualquer um dos dois caminhos.
+4. **Atualizar a lista corretamente**: garantir que o feed e o perfil recarreguem após apagar (invalidar também as consultas do perfil, não só as do feed), evitando a impressão de que "não apagou".
+5. **Validar no app rodando**: entrar no app, apagar uma publicação de teste do próprio usuário e confirmar pelo banco que ela sai da lista; se aparecer erro, ele agora dirá exatamente o motivo e eu corrijo a causa (regra de acesso ou consulta) na mesma etapa.
 
 ## Detalhes técnicos
 
-- Migração 1 (schema): `posts.deleted_at`, `posts.updated_at`, `direct_messages.deleted_at`, `direct_messages.updated_at` + triggers `update_updated_at_column`; índices parciais em `deleted_at IS NULL`.
-- Migração 2 (policies):
-  - `posts`: substituir `Posts are viewable by authenticated` (USING `true`) por `school = public.current_user_school() AND deleted_at IS NULL`, mantendo policy separada para `developer`.
-  - `user_roles`: substituir o SELECT atual por versão que troca `has_role(admin)` amplo por admin + mesma escola (via função SECURITY DEFINER comparando `profiles.school`).
-  - `profiles`: substituir `Active profiles viewable by everyone` por `deleted_at IS NULL AND school = public.current_user_school()`, mantendo "vê o próprio perfil" e "developer vê todos".
-  - `direct_messages`: manter as policies de participante; acrescentar `deleted_at IS NULL` não é adequado no SELECT (o chat precisa mostrar "mensagem apagada"), então o filtro fica na leitura do app.
-- Frontend: filtrar `deleted_at IS NULL` em `useSupabaseData.ts` (posts, user posts, feed infinito), `ProfileScreen`, `DevPanelScreen`, `AdminScreen`; trocar `delete()` por `update({ deleted_at })` em `PostCard.tsx` e no chat direto.
-- Verificação final: build limpo + varredura de segurança.
+- `src/components/PostCard.tsx`: no handler de exclusão, usar `.update({ deleted_at }).eq('id', post.id).select('id')`; tratar `error` (toast com `error.message`, `console.error`) e `data?.length === 0` (sem permissão → tentar `.delete().eq('id', post.id)`).
+- Invalidations: `['posts']`, `['user-posts']`/`['infinite-posts']` conforme as chaves usadas em `src/hooks/useSupabaseData.ts`.
+- Nenhuma migração planejada por enquanto: as policies de UPDATE (`Authors can update own posts`, com USING e WITH CHECK em `profile_belongs_to_auth(author_id)`) e os GRANTs estão corretos. Só criarei migração se o erro real apontar para permissão.
