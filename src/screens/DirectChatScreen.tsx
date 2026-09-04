@@ -255,7 +255,7 @@ export default function DirectChatScreen() {
     if (msg.sender_id !== profileId) return;
     await supabase
       .from("direct_messages")
-      .update({ deleted: true, content: "" })
+      .update({ deleted: true, content: "", deleted_at: new Date().toISOString() })
       .eq("id", msg.id);
   };
 
