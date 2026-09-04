@@ -830,6 +830,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_of_user_school: {
+        Args: { _target_user_id: string }
+        Returns: boolean
+      }
       profile_belongs_to_auth: {
         Args: { _profile_id: string }
         Returns: boolean
