@@ -114,19 +114,28 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
                     queryClient.invalidateQueries({ queryKey: ['profile'] });
                   };
 
-                  const { data, error } = await supabase
+                  const { error } = await supabase
                     .from('posts')
                     .update({ deleted_at: new Date().toISOString() })
-                    .eq('id', post.id)
-                    .select('id');
+                    .eq('id', post.id);
 
-                  if (!error && data && data.length > 0) {
-                    toast.success('Post apagado');
-                    refresh();
-                    return;
+                  if (!error) {
+                    // Confirma: se a linha ainda estiver visível (deleted_at NULL), o RLS bloqueou o update.
+                    const { data: still } = await supabase
+                      .from('posts')
+                      .select('id')
+                      .eq('id', post.id)
+                      .is('deleted_at', null)
+                      .maybeSingle();
+                    if (!still) {
+                      toast.success('Post apagado');
+                      refresh();
+                      return;
+                    }
+                    console.warn('[PostCard] soft delete não aplicou (RLS). Tentando delete definitivo.');
+                  } else {
+                    console.error('[PostCard] soft delete falhou:', error);
                   }
-
-                  if (error) console.error('[PostCard] soft delete falhou:', error);
 
                   const { data: delData, error: delError } = await supabase
                     .from('posts')
@@ -146,6 +155,7 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
                   toast.success('Post apagado');
                   refresh();
                 }}
+
 
                 className="text-destructive focus:text-destructive"
               >
