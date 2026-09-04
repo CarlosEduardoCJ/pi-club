@@ -814,7 +814,6 @@ export type Database = {
         Args: { _expires_at: string; _message: string; _title: string }
         Returns: string
       }
-      current_user_school: { Args: never; Returns: string }
       delete_user_by_admin: {
         Args: { target_user_id: string }
         Returns: undefined
@@ -822,21 +821,6 @@ export type Database = {
       hard_delete_user_by_dev: {
         Args: { target_user_id: string }
         Returns: undefined
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      is_admin_of_user_school: {
-        Args: { _target_user_id: string }
-        Returns: boolean
-      }
-      profile_belongs_to_auth: {
-        Args: { _profile_id: string }
-        Returns: boolean
       }
       restore_user_by_dev: {
         Args: { target_user_id: string }
