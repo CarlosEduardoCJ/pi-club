@@ -255,31 +255,37 @@ export type Database = {
           content: string
           created_at: string
           deleted: boolean
+          deleted_at: string | null
           id: string
           reactions: Json
           read_at: string | null
           recipient_id: string
           sender_id: string
+          updated_at: string
         }
         Insert: {
           content: string
           created_at?: string
           deleted?: boolean
+          deleted_at?: string | null
           id?: string
           reactions?: Json
           read_at?: string | null
           recipient_id: string
           sender_id: string
+          updated_at?: string
         }
         Update: {
           content?: string
           created_at?: string
           deleted?: boolean
+          deleted_at?: string | null
           id?: string
           reactions?: Json
           read_at?: string | null
           recipient_id?: string
           sender_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -576,10 +582,12 @@ export type Database = {
           comments_count: number | null
           content: string
           created_at: string
+          deleted_at: string | null
           id: string
           image_url: string | null
           likes_count: number | null
           school: string | null
+          updated_at: string
         }
         Insert: {
           author_id: string
@@ -587,10 +595,12 @@ export type Database = {
           comments_count?: number | null
           content: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           image_url?: string | null
           likes_count?: number | null
           school?: string | null
+          updated_at?: string
         }
         Update: {
           author_id?: string
@@ -598,10 +608,12 @@ export type Database = {
           comments_count?: number | null
           content?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           image_url?: string | null
           likes_count?: number | null
           school?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
