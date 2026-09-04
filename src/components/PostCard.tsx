@@ -106,14 +106,57 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
                 onSelect={async (e) => {
                   e.preventDefault();
                   if (!confirm('Apagar este post?')) return;
+
+                  const refresh = () => {
+                    queryClient.invalidateQueries({ queryKey: ['posts'] });
+                    queryClient.invalidateQueries({ queryKey: ['posts-infinite'] });
+                    queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+                    queryClient.invalidateQueries({ queryKey: ['profile'] });
+                  };
+
                   const { error } = await supabase
                     .from('posts')
                     .update({ deleted_at: new Date().toISOString() })
                     .eq('id', post.id);
-                  if (error) { toast.error('Erro ao apagar'); return; }
+
+                  if (!error) {
+                    // Confirma: se a linha ainda estiver visível (deleted_at NULL), o RLS bloqueou o update.
+                    const { data: still } = await supabase
+                      .from('posts')
+                      .select('id')
+                      .eq('id', post.id)
+                      .is('deleted_at', null)
+                      .maybeSingle();
+                    if (!still) {
+                      toast.success('Post apagado');
+                      refresh();
+                      return;
+                    }
+                    console.warn('[PostCard] soft delete não aplicou (RLS). Tentando delete definitivo.');
+                  } else {
+                    console.error('[PostCard] soft delete falhou:', error);
+                  }
+
+                  const { data: delData, error: delError } = await supabase
+                    .from('posts')
+                    .delete()
+                    .eq('id', post.id)
+                    .select('id');
+
+                  if (delError) {
+                    console.error('[PostCard] delete falhou:', delError);
+                    toast.error(`Erro ao apagar: ${delError.message}`);
+                    return;
+                  }
+                  if (!delData || delData.length === 0) {
+                    toast.error('Você não tem permissão para apagar esta publicação.');
+                    return;
+                  }
                   toast.success('Post apagado');
-                  queryClient.invalidateQueries({ queryKey: ['posts'] });
+                  refresh();
                 }}
+
+
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-2" /> Apagar post
