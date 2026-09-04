@@ -92,7 +92,7 @@ function StatsTab() {
     queryFn: async () => {
       const [users, posts, events, schools, clubs, reports] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("posts").select("id", { count: "exact", head: true }),
+        supabase.from("posts").select("id", { count: "exact", head: true }).is("deleted_at", null),
         supabase.from("events").select("id", { count: "exact", head: true }),
         supabase.from("schools").select("id", { count: "exact", head: true }),
         supabase.from("clubs").select("id", { count: "exact", head: true }),
@@ -391,13 +391,14 @@ function PostsTab() {
     queryFn: async () => (await supabase
       .from("posts")
       .select("*, profiles!posts_author_id_fkey(name, username), clubs!posts_club_id_fkey(name, school)")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(200)).data ?? [],
   });
 
   const del = async (id: string) => {
     if (!confirm("Excluir este post?")) return;
-    const { error } = await supabase.from("posts").delete().eq("id", id);
+    const { error } = await supabase.from("posts").update({ deleted_at: new Date().toISOString() }).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Post excluído"); qc.invalidateQueries({ queryKey: ["dev-posts-all"] }); }
   };
@@ -494,7 +495,7 @@ function ReportsTab() {
   const deleteTarget = async (r: any) => {
     if (!confirm(`Excluir ${r.target_type === "post" ? "post" : "mensagem"} denunciado(a)?`)) return;
     if (r.target_type === "post") {
-      const { error } = await supabase.from("posts").delete().eq("id", r.target_id);
+      const { error } = await supabase.from("posts").update({ deleted_at: new Date().toISOString() }).eq("id", r.target_id);
       if (error) { toast.error(error.message); return; }
     } else {
       // tenta DM, depois chat de clube
@@ -725,7 +726,7 @@ function SchoolsDataView({ schoolNames, onBack }: { schoolNames: string[]; onBac
   });
   const { data: posts } = useQuery({
     queryKey: ["dev-school-posts", clubIds], enabled: clubIds.length > 0,
-    queryFn: async () => (await supabase.from("posts").select("*, profiles!posts_author_id_fkey(name, username), clubs!posts_club_id_fkey(name, school)").in("club_id", clubIds).order("created_at", { ascending: false })).data ?? [],
+    queryFn: async () => (await supabase.from("posts").select("*, profiles!posts_author_id_fkey(name, username), clubs!posts_club_id_fkey(name, school)").in("club_id", clubIds).is("deleted_at", null).order("created_at", { ascending: false })).data ?? [],
   });
 
   return (
