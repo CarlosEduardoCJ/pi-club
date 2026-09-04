@@ -106,7 +106,10 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
                 onSelect={async (e) => {
                   e.preventDefault();
                   if (!confirm('Apagar este post?')) return;
-                  const { error } = await supabase.from('posts').delete().eq('id', post.id);
+                  const { error } = await supabase
+                    .from('posts')
+                    .update({ deleted_at: new Date().toISOString() })
+                    .eq('id', post.id);
                   if (error) { toast.error('Erro ao apagar'); return; }
                   toast.success('Post apagado');
                   queryClient.invalidateQueries({ queryKey: ['posts'] });

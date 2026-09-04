@@ -43,6 +43,7 @@ export const usePosts = (clubId?: string) =>
       let query = supabase
         .from('posts')
         .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name, school)')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       if (clubId) query = query.eq('club_id', clubId);
       const { data, error } = await query;
@@ -59,6 +60,7 @@ export const useUserPosts = (profileId: string | undefined) =>
         .from('posts')
         .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name, school)')
         .eq('author_id', profileId!)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -78,6 +80,7 @@ export const useInfinitePosts = () =>
       const { data, error } = await supabase
         .from('posts')
         .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!posts_club_id_fkey(name, school)')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .range(from, to);
       if (error) throw error;

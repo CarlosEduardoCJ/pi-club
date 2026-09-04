@@ -418,6 +418,7 @@ const AdminPosts = () => {
         .from('posts')
         .select('*, profiles!posts_author_id_fkey(name, username, avatar), clubs!inner(name, school)')
         .eq('clubs.school', adminSchool!)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -426,7 +427,7 @@ const AdminPosts = () => {
   });
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('posts').delete().eq('id', id);
+    const { error } = await supabase.from('posts').update({ deleted_at: new Date().toISOString() }).eq('id', id);
     if (error) { toast.error('Erro ao deletar post'); return; }
     toast.success('Post deletado');
     queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
