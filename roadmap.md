@@ -1,8 +1,8 @@
 # Tarefas
 
-- [ ] Revisar e registrar o fluxo de definição da escola no cadastro.
-- [ ] Preparar SQL não aplicado para proteção da escola e SELECT autenticado, com rollback completo.
-- [ ] Registrar testes anônimos ANTES e verificar backups disponíveis.
+- [x] Revisar e registrar o fluxo de definição da escola no cadastro.
+- [x] Preparar SQL não aplicado para proteção da escola e SELECT autenticado, com rollback completo; validar em PostgreSQL local isolado.
+- [x] Registrar testes anônimos ANTES e consultar plano e documentação de backups (inventário do painel não acessível).
 - [ ] Aplicar e testar DEPOIS somente em banco isolado — bloqueado: preview e publicado compartilham o banco atual.
 
 - [x] Ajustar a exclusão e manter a atualização do feed e perfil, sem alterar permissões ou migrações.
