@@ -114,37 +114,20 @@ const PostCard = ({ post, index }: { post: PostDisplay; index: number }) => {
                     queryClient.invalidateQueries({ queryKey: ['profile'] });
                   };
 
-                  const { data, error } = await supabase
+                  const { error, count } = await supabase
                     .from('posts')
-                    .update({ deleted_at: new Date().toISOString() })
-                    .eq('id', post.id)
-                    .select('id');
+                    .delete({ count: 'exact' })
+                    .eq('id', post.id);
 
                   if (error) {
-                    console.error('[PostCard] soft delete falhou:', error);
+                    console.error('[PostCard] delete falhou:', error);
                     toast.error(`Erro ao apagar: ${error.message}`);
                     return;
                   }
 
-                  if (data && data.length > 0) {
-                    toast.success('Post apagado');
-                    refresh();
-                    return;
-                  }
-
-                  const { data: delData, error: delError } = await supabase
-                    .from('posts')
-                    .delete()
-                    .eq('id', post.id)
-                    .select('id');
-
-                  if (delError) {
-                    console.error('[PostCard] delete falhou:', delError);
-                    toast.error('Você não tem permissão para apagar esta publicação');
-                    return;
-                  }
-                  if (!delData || delData.length === 0) {
-                    toast.error('Você não tem permissão para apagar esta publicação');
+                  if (count === 0) {
+                    console.error('[PostCard] delete não afetou linhas:', { postId: post.id, count });
+                    toast.error('Nenhuma publicação foi apagada: ela não existe mais ou seu acesso foi bloqueado.');
                     return;
                   }
                   toast.success('Post apagado');
