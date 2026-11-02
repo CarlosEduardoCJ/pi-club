@@ -1,6 +1,6 @@
 # Tarefas
 
-- [ ] Trocar a exclusão do autor por DELETE sem retorno de linhas, mostrar erros reais e testar feed/perfil.
+- [x] Trocar a exclusão do autor por DELETE sem retorno de linhas e mostrar erros reais; quatro testes passaram, DELETE 204 autenticado removeu post de teste do feed/perfil e contador voltou de 2 para 1.
 - [x] Consultar policies UPDATE/DELETE e triggers atuais de posts; auditoria de exclusões inexistente, contador ativo.
 
 - [x] Revisar e registrar o fluxo de definição da escola no cadastro.
