@@ -1,5 +1,8 @@
 # Tarefas
 
+- [x] Trocar a exclusão do autor por DELETE sem retorno de linhas e mostrar erros reais; quatro testes passaram, DELETE 204 autenticado removeu post de teste do feed/perfil e contador voltou de 2 para 1.
+- [x] Consultar policies UPDATE/DELETE e triggers atuais de posts; auditoria de exclusões inexistente, contador ativo.
+
 - [x] Revisar e registrar o fluxo de definição da escola no cadastro.
 - [x] Preparar SQL não aplicado para proteção da escola e SELECT autenticado, com rollback completo; validar em PostgreSQL local isolado.
 - [x] Registrar testes anônimos ANTES e consultar plano e documentação de backups (inventário do painel não acessível).
