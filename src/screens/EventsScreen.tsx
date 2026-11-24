@@ -32,9 +32,10 @@ const EventsScreen = () => {
   const queryClient = useQueryClient();
 
 
-  const events = selectedSchool
-    ? (eventsData || []).filter((e: any) => (e.school ?? e.clubs?.school) === selectedSchool)
-    : eventsData;
+  const viewSchool = selectedSchool || (profile as any)?.school || null;
+  const events = viewSchool
+    ? (eventsData || []).filter((e: any) => (e.school ?? e.clubs?.school) === viewSchool)
+    : [];
   const clubs = selectedSchool
     ? (clubsData || []).filter((c: any) => c.school === selectedSchool)
     : clubsData;
