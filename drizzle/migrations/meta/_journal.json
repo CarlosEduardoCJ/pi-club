@@ -15,6 +15,13 @@
       "when": 1795623557710,
       "tag": "0001_scope_reads_events_clubs_competitions_announcements",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795624355368,
+      "tag": "0002_protect_profile_school_and_authenticated_reads",
+      "breakpoints": true
     }
   ]
 }
