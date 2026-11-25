@@ -822,6 +822,13 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      list_signup_schools: {
+        Args: never
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
       restore_user_by_dev: {
         Args: { target_user_id: string }
         Returns: undefined

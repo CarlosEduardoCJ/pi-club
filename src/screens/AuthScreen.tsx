@@ -17,7 +17,7 @@ const AuthScreen = () => {
   const [schoolOpen, setSchoolOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from('schools').select('id, name').order('name').then(({ data }) => {
+    supabase.rpc('list_signup_schools').then(({ data }) => {
       if (data) setSchools(data);
     });
   }, []);
